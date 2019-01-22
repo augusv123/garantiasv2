@@ -144,7 +144,7 @@ class GarantiasController extends Controller
         $intervalMeses=$diferencia->m;
         $intervalAnos = $diferencia->y*12;
         $meses = $intervalMeses+$intervalAnos;
-				$meses= 0;
+	
         if($garantia->id_categoria == 2 || $garantia->id_categoria == 3){
 
 					if($meses > 60){

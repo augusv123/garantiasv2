@@ -368,6 +368,7 @@ $(document).on('click', '#verificarEntidad', function(){
                                               '<option value="120032">Unicenter</option>' +
                                               '<option value="120031">Escobar</option>' +
                                               '<option value="120033">Tortuguitas</option>' +
+                                              '<option value="120036">OH My Bed!</option>' +
                                             '</select>' +
                                             '</p>' +
                                             '</div>';
