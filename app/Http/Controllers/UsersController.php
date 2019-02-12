@@ -14,6 +14,7 @@ use App\Http\Requests\UserRequest;
 
 use App\Http\Requests\ChangePasswordRequest;
 
+
 class UsersController extends Controller
 {
 
@@ -160,17 +161,37 @@ class UsersController extends Controller
     {
         $user = User::find(Auth::user()->id);
         $garantiasSinEjecutar = $user->garantias->where('ejecutada', '=', 0 );
+        $codigos="";
+        $cont =0;
+        $aux="Codigo: ";
+        foreach ($garantiasSinEjecutar as $garantia) {
+            if($cont!=0){
+                $codigos = $codigos.", ".$garantia->id_garantia; 
+                $cont++;
+            }
+            else {
+                $codigos=$garantia->id_garantia; 
+                $cont++;
 
+            }
+        }
+        if($cont>1){
+            $aux="Codigos: ";
+        }
         foreach ($garantiasSinEjecutar as $garantia) {
           $garantia->caducidad = app(\App\Http\Controllers\GarantiasController::class)->calculoCaducidadGarantia($garantia);
           if(strtotime(date("Y-m-d", strtotime(str_replace('/', '-', $garantia->caducidad)))) > strtotime(date('Y-m-d'))) {
-            Flash::error('<i style="font-size:24px;vertical-align: middle;" class="fa fa-exclamation-triangle" aria-hidden="true"></i> <span style="vertical-align:middle;"> Debe renunciar a las garantias vigentes antes de poder eliminar su cuenta definitivamente.</span>');
+
+            
+            Flash::error('<i style="font-size:24px;vertical-align: middle;" class="fa fa-exclamation-triangle" aria-hidden="true"></i> <span style="vertical-align:middle;"> IMPORTANTE:Usted registra garantías vigentes –'.$aux.$codigos.' -. A los fines de culminar con el proceso de eliminación del perfil de usuario es necesario que Ud. renuncie y deje sin efecto  las garantías vigentes eliminándolas desde el listado bajo tal usuario. Ejecutado este paso previo válidamente, podrá Ud.  eliminar su perfil de usuario y cuenta definitivamente.</span>');
             return redirect()->action('GarantiasController@getIndex');
           }
         }
-        //$user->delete();
+        $user->delete();
         Auth::logout();
-        Flash::success('El usuario <strong>' . $user->name . '</strong> ha sido eliminado de manera exitosa.');
+        $t= new  TramitesController();
+       $cod= $t->create($user->id);
+        Flash::success('Ud. ha finalizado con éxito el proceso voluntario de eliminación del perfil de <strong>'. $user->name .'<strong> Asi mismo, el correo electrónico asociado a tal perfil de usuario ha sido eliminado de nuestra base de datos como también todos los datos personales ingresados e informado al momento de su registración. Esta acción es definitiva y se ha registrado bajo el #'.$cod.'. Atentamente, Piero SAIC');
         return redirect()->route('auth.login');
     }
 

@@ -30,6 +30,7 @@
             <li><a href="{{ route('admin.exceptuados.index') }}">Ver Exceptuados</a></li>
           </ul>
         </li>
+        <li><a href="{{ route('admin.tramites.index') }}">Tramites</a></li>
       </ul>
       <!--
       <form class="navbar-form navbar-left" role="search">

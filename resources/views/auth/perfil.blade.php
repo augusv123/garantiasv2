@@ -29,7 +29,7 @@
 </div>
       </div>
       <div class="modal-footer">
-        <!--<a class="btn btn-danger visible-xs-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block" style="margin-bottom:5px;" href="{{ URL::route('perfil.solicitaeliminar') }}"><i class="fa fa-btn fa-trash"></i>Eliminar cuenta y datos personales</a> -->
+        <a class="btn btn-danger visible-xs-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block" style="margin-bottom:5px;" href="{{ URL::route('perfil.solicitaeliminar') }}"><i class="fa fa-btn fa-trash"></i>Eliminar cuenta y datos personales</a> 
         <a class="btn btn-default visible-xs-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block" style="margin-bottom:5px;" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i> Cerrar</a>
       </div>
     </div>

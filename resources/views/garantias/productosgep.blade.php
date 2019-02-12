@@ -102,9 +102,10 @@ $("body").backstretch([
       if(e.relatedTarget.id == 'regCompra'){
         $( "#confirm" ).show();
       }else{
+        $( "#checkTyC" ).hide();
         $( "#confirm" ).hide();
         $( "#notaHabilitaAcept" ).hide();
-        $("#agreement").html("Terminos Generales del sitio??");
+        $("#agreement").html("@include('garantias.terminosGenerales')");
       }
 
   });

@@ -43,7 +43,11 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function 
         'uses' => 'EventosController@index',
         'as'   => 'admin.eventos.index'
         ]);
-
+        Route::get('tramites', [   //para que me permita ver tramites
+            'uses' => 'TramitesController@index',
+            'as'   => 'admin.tramites.index'
+            ]);
+    
     Route::get('users/{id}/destroy', [   //para que me permita eliminar sin tener un formulario de por medio
     	'uses' => 'UsersController@destroy',
     	'as'   => 'admin.users.destroy'

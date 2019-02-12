@@ -17,13 +17,10 @@ Garantias
   <div class="tab-content" style="text-align: center;margin-bottom:30px;">
     <div role="tabpanel" class="tab-pane active" id="info">
       <h4 style="color:#d62c1a;font-weight:bold;">
-        Disclaimer
+        ALERTA
       </h4>
       <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua.
-         Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat.
-          Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-           Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        Ud. esta por  borrar su cuenta, asi mismo, el correo electrónico asociado a tal perfil de usuario sera  eliminado de nuestra base de datos, como también todos los datos personales ingresados e informado al momento de su registración. Esta acción es definitiva Esta seguro de quiere seguir?
       </p>
 
       <form method="POST" action="/profile/reallydelete">

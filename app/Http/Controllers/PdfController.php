@@ -62,7 +62,7 @@ class PdfController extends Controller
 				$garantia->descripcion = "No encontrado"; 
 			}
 			
-			QrCode::format('png')->size(150)->margin(1)->generate('http://garantiaspiero.com.ar/consulta/'.$id, '../public/qrcodes/'.$id.'.png');
+			QrCode::format('png')->size(150)->margin(1)->generate('http://garantias.piero.com.ar/consulta/'.$id, '../public/qrcodes/'.$id.'.png');
 
 			$garantia->qr = $urlQr.$garantia->id_garantia.".png";
 		}
