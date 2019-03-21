@@ -285,7 +285,27 @@ Garantias
                   <div class="col-xs-12">
                       <div class="well" style="margin-bottom:0px;">
                           <a id="primerVisita" class="btn btn-warning btn-block" data-dismiss="modal" data-toggle="modal" data-target="#programarVisita">Programa visita</a>
-                          <a id="procedeEjecucion" class="btn btn-primary btn-block disabled decisionEjecuta" data-dismiss="modal" data-toggle="modal" data-target="@if($garantia->esClientePiero) {{ '#login' }} @else {{ '#elevaDistribuidor' }} @endif">Procede a ejecución</a>
+                          @if($garantia->esClientePiero) 
+                            @if(Auth::user()!= null && (Auth::user()->type=='local'||Auth::user()->type=='admin'))
+                            <a id="ProcederEjecucionDirecta" class="btn btn-primary btn-block disabled decisionEjecuta">Proceder a ejecución</a>
+                          <div id="ProcederEjecucionDirectamsj"></div>
+
+                            @else
+                                <a id="procedeEjecucion" class="btn btn-primary btn-block disabled decisionEjecuta" data-dismiss="modal" data-toggle="modal" data-target="
+                                @if($garantia->esClientePiero) 
+                                {{ '#login' }}
+                                {{-- @if(Auth::user()!= null && Auth::user()->type=='local') --}}
+                                @else {{ '#elevaDistribuidor' }} @endif">Procede a ejecución</a>
+                            @endif
+                            
+                          @else
+                          <a id="procedeEjecucion" class="btn btn-primary btn-block disabled decisionEjecuta" data-dismiss="modal" data-toggle="modal" data-target="
+                          @if($garantia->esClientePiero) 
+                          {{ '#login' }}
+                          {{-- @if(Auth::user()!= null && Auth::user()->type=='local') --}}
+                          @else {{ '#elevaDistribuidor' }} @endif">Procede a ejecución</a>
+                          @endif
+                         
                           <a id="noProcedeEjecucion" class="btn btn-danger btn-block disabled decisionEjecuta" data-dismiss="modal" data-toggle="modal" data-target="#noProcede">No procede a ejecución</a>
                       </div>
                   </div>
@@ -349,6 +369,36 @@ $("body").backstretch([
     , "{{ asset('css/imagenes/Render MNTRX nvo baja.png') }}"
   ], {duration: 3000, fade: 750});
 
+// ProcederEjecucionDirecta
+$('#ProcederEjecucionDirecta').on('click', function(e){
+// alert('procedeajecutardirectapapa');
+var parametros = {
+        "cliente" : $("#username").val(),
+        "password" : $("#password").val(),
+        "idGarantiaAEjecutar" : $("#gtiaElevar").val()
+};
+$.ajax({
+        data:  parametros,
+        dataType: "json",
+        url:   'loginapi',
+        type:  'POST',
+        beforeSend: function () {
+                $("#loginErrorMsg").html('<p class="alert alert-info"><i class="fa fa-spinner" aria-hidden="true"></i> Procesando, espere por favor...</p>');
+        },
+        success:  function (respuesta) {
+          if(respuesta.success){
+
+            $("#ejecutarGtia").html('<p class="alert alert-info"><i class="fa fa-check-circle" aria-hidden="true"></i> Garantia ejecutada exitosamente!</p>');
+            $('#regEvento').modal('toggle');
+          }else{
+            $("#ejecutarGtia").html('<p class="alert alert-info"><i class="fa fa-check-circle" aria-hidden="true"></i> Garantia ejecutada exitosamente!</p>');
+            $('#regEvento').modal('toggle');
+          }
+
+        }
+});
+
+});
 
     $('#loginyejecutar').on('click', function(e){
 
@@ -395,13 +445,19 @@ $("body").backstretch([
                         $("#DistriErrorMsg").html('<p class="alert alert-info"><i class="fa fa-spinner" aria-hidden="true"></i> Procesando, espere por favor...</p>');
                 },
                 success:  function (respuesta) {
-                  if(respuesta){
+                  
+                  if(respuesta == -3){
+                    $("#DistriErrorMsg").html('<p class="alert alert-danger"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Tiene que estar logueado y ser administrador para ejecutar este proceso</p>');
+                  }else {
+                    if(respuesta){
                     $("#DistriErrorMsg").html('<p class="alert alert-success"><i class="fa fa-check-circle" aria-hidden="true"></i> Garantia ejecutada exitosamente.        <button style="float: right;margin-top: -7px;" type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i> Cerrar</button></p>');
                     $("#elevarDistriForm").remove();
                     $("#ejecutarGtia").html('<p class="alert alert-info"><i class="fa fa-check-circle" aria-hidden="true"></i> Garantia ejecutada exitosamente. (NOTA A CARGO DISTRIBUIDOR)</p>');
                   }else{
                     $("#DistriErrorMsg").html('<p class="alert alert-danger"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Usuario o contraseña no válidos.</p>');
                   }
+                  }
+                 
 
                 }
         });
@@ -425,7 +481,12 @@ $("body").backstretch([
                         $("#progVisitaErrorMsg").html('<p class="alert alert-info"><i class="fa fa-spinner" aria-hidden="true"></i> Procesando, espere por favor...</p>');
                 },
                 success:  function (respuesta) {
-                  if(respuesta){
+                  if(respuesta == -3){
+                    $("#progVisitaErrorMsg").html('<p class="alert alert-danger"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Tiene que estar logueado y ser administrador para ejecutar este proceso</p>');
+                    
+                  }
+                  else
+                   if(respuesta){
                     $("#progVisitaErrorMsg").html('<p class="alert alert-success"><i class="fa fa-check-circle" aria-hidden="true"></i>Se ha dejado constancia de la visita programada, en caso de querer ejecutar esta garantía luego podrá hacerlo desde la opción \'Proceder a ejecutar\'     <button style="float: right;margin-top: -7px;" type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i> Cerrar</button></p>');
                     $("#progVisitaForm").remove();
                     $("#ejecutarGtia").html('<p class="alert alert-warning"><i class="fa fa-exclamation-circle" aria-hidden="true"></i>Se ha dejado constancia de la visita programada, en caso de querer ejecutar esta garantía luego podrá hacerlo desde la opción \'Proceder a ejecutar\'</p>');
@@ -452,13 +513,19 @@ $("body").backstretch([
                         $("#RechazoErrorMsg").html('<p class="alert alert-info"><i class="fa fa-spinner" aria-hidden="true"></i> Procesando, espere por favor...</p>');
                 },
                 success:  function (respuesta) {
-                  if(respuesta){
+                  if(respuesta == -3){
+                    $("#RechazoErrorMsg").html('<p class="alert alert-danger"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Tiene que estar logueado y ser administrador para ejecutar este proceso</p>');
+                  }
+                  else {
+                    if(respuesta){
                     $("#RechazoErrorMsg").html('<p class="alert alert-success"><i class="fa fa-check-circle" aria-hidden="true"></i> Se ha dejado constancia de la observación, en caso de querer ejecutar esta garantía a futuro podrá hacerlo desde la opción \'Proceder a ejecutar\'.        <button style="float: right;margin-top: -7px;" type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i> Cerrar</button></p>');
                     $("#registrarEventoRechazo").remove();
                     $("#ejecutarGtia").html('<p class="alert alert-warning"><i class="fa fa-exclamation-circle" aria-hidden="true"></i>Se ha dejado constancia de la observación, en caso de querer ejecutar esta garantía a futuro podrá hacerlo desde la opción \'Proceder a ejecutar\'</p>');
                   }else{
                     $("#RechazoErrorMsg").html('<p class="alert alert-danger"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Usuario o contraseña no válidos.</p>');
                   }
+                  }
+                
 
                 }
         });

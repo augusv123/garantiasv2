@@ -9,6 +9,10 @@ Inicio \ Garantias
 <div class="content">
   <p style="width: 50%;float: left;margin-top:15px;   text-shadow: 3px 3px 2px rgba(85, 85, 85, 0.61);" >Garant&iacute;as Piero</p>
   <a style="float:right;padding:18px;vertical-align:middle;" id="addColchon" class="agregarNuevo btn btn-primary">Agregar Nuevo&nbsp;&nbsp;<i class="fa fa-plus"></i></a>
+  <a style="float:right;padding:18px;vertical-align:middle;" id="reclamarGtia" data-toggle="modal" data-target="#reclamarGtiaModal" class=" btn btn-default">
+    <span class="d-xs-none">Quiero reclamar garantía </span><i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+
+  </a>
 </div>
 
 <div id="container" style="padding-top:30px;" class="container">
@@ -42,6 +46,178 @@ Inicio \ Garantias
 
 	</div>
     <br>
+
+       <!-- Modal pasos para reclamar garantia -->
+<div class="modal fade" id="reclamarGtiaModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Pasos a seguir para reclamar garantía de producto registrado</h5>
+        <button type="button" class="close" style="margin-top: -25px;" data-dismiss="modal" aria-label="Close">
+         <i class="fa fa-times-circle" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="modal-body" >
+                      <!-- Tabs with icons on Card -->
+                      <div class="card card-nav-tabs">
+                        <div class="card-header card-header-info">
+                          <!-- colors: "header-primary", "header-info", "header-success", "header-warning", "header-danger" -->
+                          <div class="nav-tabs-navigation">
+                            <div class="nav-tabs-wrapper">
+                              <ul class="nav nav-tabs" data-tabs="tabs">
+                                <li class="nav-item">
+                                  <a class="nav-link" href="#web" data-toggle="tab" >
+                                    <i class="fa fa-cart-plus" aria-hidden="true"></i>
+ Compré por Página Web Oficial
+                                  <div class="ripple-container"></div></a>
+                                </li>
+                                <li class="nav-item">
+                                  <a class="nav-link" href="#puntodeventa" data-toggle="tab">
+                                    <img style="width:10%; " src="{{asset('images/tiendab.gif')  }}" alt="Italian Trulli">
+                                     Compré por Punto de Venta
+                                  <div class="ripple-container"></div></a>
+                                </li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="card-body " style="color:black">
+                          <div class="tab-content text-center" style="background-color: #e3e3e3;">
+                            <div class="tab-pane active" id="defaultViaVta">
+                              <p style="color:black"> Seleccione via de adquisición para visualizar procedimiento </p>
+                            </div>
+                            <div class="tab-pane" id="web">
+                              <div class="row" style="color: black;">
+                              					<div class="col-lg-4 col-md-12">
+                              						<div class="info">
+                              							<div class="icon icon-info">
+                                              <img src="{{asset('images/persona.gif')  }}" alt="Italian Trulli">
+                              							
+                              							</div>
+                              							<h4 class="info-title" style="margin:0px;">Registre Producto</h4>
+                              							<p style="font-size:12px;">Registre su producto dentro de los primeros 12 meses de realizada la compra.</p>
+                              						</div>
+                                          <div class="info">
+                              							<div class="icon icon-primary"  style="margin-top:20px;">
+                                              <img src="{{asset('images/mensaje.gif')  }}" alt="Italian Trulli">
+                                          
+
+                              							</div>
+                              							<h4 class="info-title" style="margin:0px;">Complete Formulario</h4>
+                              							<p style="font-size:12px;">Complete el formulario con los datos solicitados para iniciar proceso. Un representante se contactará con usted a la brevedad.</p>
+                              						</div>
+                              					</div>
+
+                              					<div class="col-lg-8 col-md-12">
+
+
+                                          <style type="text/css">
+                                    input[type=file]{
+                                      display: inline;
+                                    }
+                                    #image_preview{
+                                      border: 1px solid #ddd;
+                                      padding: 10px;
+                                    }
+                                    #image_preview img{
+                                      width: 100px;
+                                      padding: 5px;
+                                    }
+                                  </style>
+                                          <form action="{{ route('images.upload') }} " id="reclamarGtiaForm" method="post" enctype="multipart/form-data">
+                                              <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                              <div class="form-group">
+                                                <label for="selectProducto">Producto</label>
+                                                <select   id="selectProducto" name="selectProducto" class="form-control" data-style="select-with-transition" title="Seleccione producto" data-size="7">
+                                                  @if($garantias->isEmpty())
+                                                    <option disabled>Aún no ha registrado productos adquiridos.</option>
+                                                    {{-- <option value="1">1E1-1</option> --}}
+                                                  @endif
+                                                  @foreach($garantias as $garantia)
+                                                      @if((!$garantia->ejecutada) && ($garantia->cuit_adquirido == env('CUIT') )) 
+                                                      <option value="{{ $garantia->id_garantia }}">{{ $garantia->orden }}E{{ $garantia->etiqueta }}-{{ $garantia->desc }}</option>
+                                                      @endif
+                                                  @endforeach
+                                                </select>
+                                                <small id="productoHelp" class="form-text ">Seleccione el producto registrado por el cual desea reclamar. (Debió ser adquirido via Tienda oficial Mercado Libre o www.{{env('BASE_NOMBRE_EMP_MIN')}}.com)</small>
+                                              </div>
+                                              <div class="form-group">
+                                                <label for="fotosUpload">Factura y Fotos</label>
+                                              <div style="width:100%" class="fileinput fileinput-new" data-provides="fileinput">
+                                                  <div class="input-group">
+                                                      <div  class="form-control uneditable-input" data-trigger="fileinput">
+                                                          <i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span>
+                                                      </div>
+                                                      <div class="input-group-btn">
+                                                          <div class="btn btn-default btn-file">
+                                                              <span class="clickbtn1 fileinput-new" >Seleccionar</span>
+                                                              <span class="clickbtn1 fileinput-exists">Cambiar</span>
+                                                              <input class="clickedbtn1" type="file" multiple="true" id="uploadFile" name="uploadFile[]" />
+                                                          </div>
+                                                          <button type="button" class="btn btn-danger fileinput-exists" data-dismiss="fileinput" title="eliminar">
+                                                              <i class="fa fa-trash" aria-hidden="true"></i>
+                                                          </button>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                              <small id="ImgHelp" class="form-text ">Seleccione como máximo 5 archivos de hasta 4MB cada uno. Formatos soportados: (jpg, png, jpeg y pdf)</small>
+                                              </div>
+                                              <div id="errordiv" style="color:white;" class="alert d-none" role="alert"></div>
+
+                                              <!--<input type="file" id="uploadFile" name="uploadFile[]" multiple/>-->
+                                              <input type="submit" class="btn btn-success" name='submitImage' value="Enviar"/>
+                                          </form>
+                                         
+                              					</div>
+                              </div>
+                            </div>
+                            <div class="tab-pane" id="puntodeventa">
+                              <div class="row" style="color:black">
+                                <div class="col-md-4">
+                                  <div class="info">
+                                    <div class="icon icon-info">
+                                      <img src="{{asset('images/persona.gif')  }}" alt="Italian Trulli">
+                                    </div>
+                                    <h4 class="info-title">Registre producto</h4>
+                                    <p style="font-size:12px;">Registre su producto dentro de los primeros 12 meses de realizada la compra.</p>
+                                  </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                  <div class="info">
+                                    <div class="icon icon-primary">
+                                      
+                                      <img src="{{asset('images/tienda.gif')  }}" alt="Italian Trulli">
+
+                                    </div>
+                                    <h4 class="info-title">Dirijase al local</h4>
+                                    <p style="font-size:12px;">Dirijase hacia el local donde adquiurió el producto con su registro de garantia extendida, factura de compra y producto/fotos del mismo que verifiquen la falla.</p>
+                                  </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                  <div class="info">
+                                    <div class="icon icon-success">
+                                    <img  src="{{asset('images/escudo.gif')  }}" alt="Italian Trulli">
+
+                                    </div>
+                                    <h4 class="info-title">Ejecución</h4>
+                                    <p style="font-size:12px;">El agente del local validará la documentación proporcionada y dara curso a la reposición del producto.</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- End Tabs with icons on Card -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger " data-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div> 
 @include('flash::message')
 
 @if(count($errors) > 0)
@@ -367,7 +543,7 @@ $(document).on('click', '#verificarEntidad', function(){
                                             '<select class="form-control" name="razonSoc">' +
                                               '<option value="120032">Unicenter</option>' +
                                               '<option value="120031">Escobar</option>' +
-                                              '<option value="120033">Tortuguitas</option>' +
+                                              '<option value="120035">Sitio Web Oficial/Mercado libre</option>' +
                                               '<option value="120036">OH My Bed!</option>' +
                                             '</select>' +
                                             '</p>' +
