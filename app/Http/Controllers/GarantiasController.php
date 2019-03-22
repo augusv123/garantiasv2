@@ -90,6 +90,7 @@ class GarantiasController extends Controller
 					]
 				]);
 			$jsond = json_decode($response->getBody());
+
 			if($jsond->success){
 				$garantia->desc = $jsond->descripcion;
 

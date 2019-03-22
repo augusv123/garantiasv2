@@ -367,7 +367,7 @@ $(document).on('click', '#verificarEntidad', function(){
                                             '<select class="form-control" name="razonSoc">' +
                                               '<option value="120032">Unicenter</option>' +
                                               '<option value="120031">Escobar</option>' +
-                                              '<option value="120033">Tortuguitas</option>' +
+                                              '<option value="120035">Sitio Web Oficial/Mercado libre</option>' +
                                               '<option value="120036">OH My Bed!</option>' +
                                             '</select>' +
                                             '</p>' +
