@@ -23,6 +23,7 @@ Route::get('logout', ['as' => 'auth.logout', 'uses' => 'Auth\AuthController@logo
 //Route::get('password/reset/{token?}', ['as' => 'auth.password.reset', 'uses' => 'Auth\PasswordController@showResetForm']);
 Route::get('password/email', ['as' => 'auth.password.email', 'uses' => 'Auth\PasswordController@sendResetLinkEmail']);
 //Route::post('password/reset', ['as' => 'auth.password.reset', 'uses' => 'Auth\PasswordController@reset']);
+Route::post('images-upload', 'GarantiasController@imagesUploadPost')->name('images.upload');
 
 //ADMINISTRACION USUARIOS-CONTROLADOR
 Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function () {

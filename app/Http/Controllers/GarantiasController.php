@@ -21,6 +21,7 @@ use Flash;
 use Auth;
 
 use Mail;
+use File;
 
 use Carbon\Carbon;
 
@@ -32,15 +33,16 @@ class GarantiasController extends Controller
 	public function index()
     {
     	$garantias = Garantia::orderBy('id', 'ASC')->paginate(5);
-    	return view('admin.garantias.index')->with('garantias', $garantias);
-
+		
+		return view('admin.garantias.index')->with('garantias', $garantias);
     }
 
 	public function getGarantiasUsr($id)
 	    {
 	    	$garantias = Garantia::orderBy('id', 'ASC')->where('user_id', '=', $id )->get();
-				$garantias = $this->completaDatosParaMostrarGarantias($garantias);
-	    	return view('garantias.lista')->with('garantias', $garantias);
+				
+			$garantias = $this->completaDatosParaMostrarGarantias($garantias);
+			return view('garantias.lista')->with('garantias', $garantias);
 
 	    }
 
@@ -245,7 +247,49 @@ class GarantiasController extends Controller
 				}
 				}
 		}
-
+		public function imagesUploadPost(Request $request)
+		{
+				try {
+					$this->validate($request, [
+					'selectProducto' => 'required',
+					'uploadFile' => 'required',
+				]);
+	
+					$path = public_path('img/garantiasDocs')."/".$request->input('selectProducto');
+					if(!File::exists($path)) {
+						// if(File::exists($path)) {
+						File::makeDirectory($path, 0775, true);
+					}
+					else{
+						/* Aviso que hay reclamo en curso o ELIMINO Y SOBREESCRIBO - decidir */
+						Flash::warning('<i style="font-size:24px;vertical-align: middle;" class="fa fa-exclamation-triangle" aria-hidden="true"></i> <span style="vertical-align:middle;">Ya existe un reclamo en curso para esta garantía. Contactese a '.env("SERVICIO_ATENCION_CLIENTE_EMAIL", "webmaster@grupopiero.com").'</span>');
+						return redirect()->action('GarantiasController@getIndex');
+					}
+					// dd($request->file('uploadFile'));
+					foreach ($request->file('uploadFile') as $key => $value) {
+							$imageName = $request->input('selectProducto')."-". $key . '.' . $value->getClientOriginalExtension();
+							$value->move($path, $imageName);
+					}
+	
+				$idGenerado = ['idGarantia' => $request->input('selectProducto'), 'user' => Auth::user()->email];
+					Mail::send('emails.envioDocumentacion', $idGenerado, function ($message) use ($request, $path){
+				  $message->subject('Solicitud de Garantía para revisión');
+				//   $message->to("nfortes@grupopiero.com"); 
+				  $message->to(env("SERVICIO_ATENCION_CLIENTE_EMAIL", "webmaster@grupopiero.com")); 
+					// webmaster@grupopiero.com
+				  foreach ($request->file('uploadFile') as $key => $value) {
+					  $imageName = $request->input('selectProducto')."-". $key . '.' . $value->getClientOriginalExtension();
+					  $message->attach($path."/".$imageName);
+				  }
+				});
+	
+					Flash::success('<i style="font-size:24px;vertical-align: middle;" class="fa fa-check" aria-hidden="true"></i> <span style="vertical-align:middle;">La informacion se ha enviado exitosamente.</span>');
+					return redirect()->action('GarantiasController@getIndex');
+				} catch (Exception $e) {
+					Flash::error('<i style="font-size:24px;vertical-align: middle;" class="fa fa-times" aria-hidden="true"></i> <span style="vertical-align:middle;">La informacion no ha podido enviarse. intente nuevamente o contactese a atencionalcliente@'.env('BASE_NOMBRE_EMP_MIN').'com.ar</span>');
+					return redirect()->action('GarantiasController@getIndex');
+				}
+		}
 	public function Consulta($id = null)
     {
 
@@ -259,6 +303,7 @@ class GarantiasController extends Controller
 
     	if($id != null){
     	$garantia = Garantia::where('id_garantia' , '=', $id)->first();
+		// var_dump($garantia);
 
     		if(!$garantia){
     			$garantia = null;
@@ -271,7 +316,6 @@ class GarantiasController extends Controller
     		$client = new Client(['base_uri' => 'https://clientes.piero.com.ar','verify' => false]);
 			$response = $client->request('GET', '/modulos/webService', [ 'query' => ['tag' => 'item', 'itcodigo' => $garantia->it_codigo, 	]]);
 			$jsond = json_decode($response->getBody());
-
 			if($jsond->success){
                 //LLAMO A LA API PARA VERIFICAR QUE CLIENTE SEA DE PIERO
                 $clientApi = new Client(['base_uri' => 'https://clientes.piero.com.ar','verify' => false]);
@@ -281,7 +325,8 @@ class GarantiasController extends Controller
                         'cuit' => $garantia->cuit_adquirido,
                     ]
                 ]);
-                $jsonEsCliente = json_decode($responseCli->getBody());
+				$jsonEsCliente = json_decode($responseCli->getBody());
+				// var_dump($jsonEsCliente);
                 $garantia->esClientePiero = $jsonEsCliente->success;
 				$garantia->descripcion = $jsond->descripcion;
 
@@ -299,6 +344,7 @@ class GarantiasController extends Controller
                 }else{
                     $garantia->style = 'label-success';
                 }
+				// var_dump($garantia);
 
 
 			}else{
@@ -443,8 +489,18 @@ class GarantiasController extends Controller
 
     public function postEjecutagarantia(Request $request){
 
-        $id = $request->input('cliente');
-
+				$id = $request->input('cliente');
+			
+				try {
+					if(Auth::User()!=null){
+							if(Auth::User()->type != 'admin'){
+									return -3;
+							}
+					}else return -3;
+					
+			} catch (\Throwable $th) {
+					return -3;
+			}
         /* ejecutar una Garantia */
         if($request->input('idGarantiaAEjecutar')){
             $garantia = Garantia::where('id_garantia' , '=', $request->input('idGarantiaAEjecutar'))->first();
@@ -462,7 +518,17 @@ class GarantiasController extends Controller
     }
 
     public function postRechazogtiaevento(Request $request){
-
+		
+			try {
+				if(Auth::User()!=null){
+						if(Auth::User()->type != 'admin'){
+								return -3;
+						}
+				}else return -3;
+				
+		} catch (\Throwable $th) {
+				return -3;
+		}
         $id = $request->input('idGarantiaAEjecutar');
         $observacion = $request->input('observaciones');
 

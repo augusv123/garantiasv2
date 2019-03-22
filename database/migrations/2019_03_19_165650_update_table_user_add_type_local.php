@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateTableTramites extends Migration
+class UpdateTableUserAddTypeLocal extends Migration
 {
     /**
      * Run the migrations.
@@ -12,10 +12,10 @@ class CreateTableTramites extends Migration
      */
     public function up()
     {
-        Schema::create('Tramites', function (Blueprint $table) {
-            $table->increments('id')->unique()->primary();
-            $table->integer('cliente');
-            $table->timestamps();
+        Schema::table('users', function($table) {
+            DB::statement("ALTER TABLE `users` MODIFY COLUMN `type` enum('admin','member','local') default 'member'");
+       
+            // $table->string('type')->default('member')->change();
         });
     }
 
@@ -26,6 +26,6 @@ class CreateTableTramites extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('Tramites');
+        //
     }
 }
