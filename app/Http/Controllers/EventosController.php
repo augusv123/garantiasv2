@@ -39,16 +39,16 @@ class EventosController extends Controller
 
 
     public function postNuevoevento(Request $request){
-        try {
-            if(Auth::User()!=null){
-                if(Auth::User()->type != 'admin'){
-                    return -3;
-                }
-            }else return -3;
+        // try {
+        //     if(Auth::User()!=null){
+        //         if(Auth::User()->type != 'admin'){
+        //             return -3;
+        //         }
+        //     }else return -3;
             
-        } catch (\Throwable $th) {
-            return -3;
-        }
+        // } catch (\Throwable $th) {
+        //     return -3;
+        // }
         $id = $request->input('idGarantiaAEjecutar');
         $observacion = $request->input('observaciones');
         $fecha = \DateTime::createFromFormat('d/m/Y', $request->input('fecha'));

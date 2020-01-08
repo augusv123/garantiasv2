@@ -92,7 +92,6 @@ class GarantiasController extends Controller
 					]
 				]);
 			$jsond = json_decode($response->getBody());
-
 			if($jsond->success){
 				$garantia->desc = $jsond->descripcion;
 
@@ -266,6 +265,7 @@ class GarantiasController extends Controller
 						return redirect()->action('GarantiasController@getIndex');
 					}
 					// dd($request->file('uploadFile'));
+					if(($request->hasfile('uploadFile')))
 					foreach ($request->file('uploadFile') as $key => $value) {
 							$imageName = $request->input('selectProducto')."-". $key . '.' . $value->getClientOriginalExtension();
 							$value->move($path, $imageName);
@@ -275,8 +275,9 @@ class GarantiasController extends Controller
 					Mail::send('emails.envioDocumentacion', $idGenerado, function ($message) use ($request, $path){
 				  $message->subject('Solicitud de Garantía para revisión');
 				//   $message->to("nfortes@grupopiero.com"); 
-				  $message->to(env("SERVICIO_ATENCION_CLIENTE_EMAIL", "webmaster@grupopiero.com")); 
+				  $message->to(env("SERVICIO_ATENCION_CLIENTE_EMAIL", "garantias@piero.com")); 
 					// webmaster@grupopiero.com
+					if(($request->hasfile('uploadFile')))
 				  foreach ($request->file('uploadFile') as $key => $value) {
 					  $imageName = $request->input('selectProducto')."-". $key . '.' . $value->getClientOriginalExtension();
 					  $message->attach($path."/".$imageName);
@@ -378,7 +379,7 @@ class GarantiasController extends Controller
 
 		$json = $response->getBody();
 		$jsond = json_decode($json);
-
+			// dd($response);
 		if($jsond->success){
 			$result = Garantia::where('orden', '=', $ordenProd)->where('etiqueta', '=', $etiqueta)->first();
 			$jsond->regFabricacion->qr = "../qrcodes/".$ordenProd.$etiqueta.".png";
@@ -444,7 +445,9 @@ class GarantiasController extends Controller
         $garantia->fecha_compra = date("Y-m-d", strtotime(str_replace('/', '-', $request->input('fechaCarton'))));
         $garantia->fecha_recepcion = date("Y-m-d", strtotime(str_replace('/', '-', $request->input('fechaRecepcion'))));
         $garantia->id_garantia = ( ( ( $garantia->user_id + $garantia->orden ) * $garantia->etiqueta ) * substr($garantia->cuit_adquirido, 0, 4) );
-        $garantia->save();
+		// 68512  3
+		$garantia->id_garantia = Carbon::now()->format('dmY').$garantia->id_garantia;
+		$garantia->save();
 
         $idGenerado = ['idGarantia' => $garantia->id_garantia, 'user' => $garantia->user_id];
         Mail::send('emails.garantiaRegistrada', $idGenerado, function ($message){
@@ -462,14 +465,7 @@ class GarantiasController extends Controller
         $id = $request->input('cliente');
         $pass = $request->input('password');
 
-        /* Si el login es para ejecutar una Garantia */
-        if($request->input('idGarantiaAEjecutar')){
-            $garantia = Garantia::where('id_garantia' , '=', $request->input('idGarantiaAEjecutar'))->first();
-            $garantia->cli_asignado = $id;
-            $garantia->ejecutada = 1;
-            $garantia->fecha_ejecucion = Carbon::now();
-            $garantia->save();
-        }
+		
 
             //LLAMO A LA API PARA DESCRIPCION DE ITEM
             $client = new Client(['base_uri' => 'https://clientes.piero.com.ar','verify' => false]);
@@ -481,7 +477,20 @@ class GarantiasController extends Controller
                 ]
                 ]);
 
-            $jsond = json_decode($response->getBody());
+			$jsond = json_decode($response->getBody());
+        /* Si el login es para ejecutar una Garantia */
+			
+			if($jsond->error!=1){
+				if($request->input('idGarantiaAEjecutar')){
+					$garantia = Garantia::where('id_garantia' , '=', $request->input('idGarantiaAEjecutar'))->first();
+					$garantia->cli_asignado = $id;
+					$garantia->ejecutada = 1;
+					$garantia->fecha_ejecucion = Carbon::now();
+					$garantia->save();
+				}
+			}
+			
+			// dd($request->all(),$jsond);
 
             return json_encode($jsond);
 
@@ -491,16 +500,16 @@ class GarantiasController extends Controller
 
 				$id = $request->input('cliente');
 			
-				try {
-					if(Auth::User()!=null){
-							if(Auth::User()->type != 'admin'){
-									return -3;
-							}
-					}else return -3;
+			// 	try {
+			// 		if(Auth::User()!=null){
+			// 				if(Auth::User()->type != 'admin'){
+			// 						return -3;
+			// 				}
+			// 		}else return -3;
 					
-			} catch (\Throwable $th) {
-					return -3;
-			}
+			// } catch (\Throwable $th) {
+			// 		return -3;
+			// }
         /* ejecutar una Garantia */
         if($request->input('idGarantiaAEjecutar')){
             $garantia = Garantia::where('id_garantia' , '=', $request->input('idGarantiaAEjecutar'))->first();
@@ -519,16 +528,16 @@ class GarantiasController extends Controller
 
     public function postRechazogtiaevento(Request $request){
 		
-			try {
-				if(Auth::User()!=null){
-						if(Auth::User()->type != 'admin'){
-								return -3;
-						}
-				}else return -3;
+		// 	try {
+		// 		if(Auth::User()!=null){
+		// 				if(Auth::User()->type != 'admin'){
+		// 						return -3;
+		// 				}
+		// 		}else return -3;
 				
-		} catch (\Throwable $th) {
-				return -3;
-		}
+		// } catch (\Throwable $th) {
+		// 		return -3;
+		// }
         $id = $request->input('idGarantiaAEjecutar');
         $observacion = $request->input('observaciones');
 
