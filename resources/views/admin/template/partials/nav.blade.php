@@ -31,6 +31,7 @@
           </ul>
         </li>
         <li><a href="{{ route('admin.tramites.index') }}">Tramites</a></li>
+        <li><a href="{{ route('admin.familias.index') }}">Familias Comerciales</a></li>
       </ul>
       <!--
       <form class="navbar-form navbar-left" role="search">

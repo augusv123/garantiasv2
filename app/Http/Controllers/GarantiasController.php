@@ -22,7 +22,6 @@ use Auth;
 
 use Mail;
 use File;
-
 use Carbon\Carbon;
 
 use App\Http\Requests\GarantiaRequest;
@@ -31,7 +30,7 @@ class GarantiasController extends Controller
 {
 
 	public function index()
-    {
+    {	
     	$garantias = Garantia::orderBy('id', 'ASC')->paginate(5);
 		
 		return view('admin.garantias.index')->with('garantias', $garantias);
@@ -39,6 +38,7 @@ class GarantiasController extends Controller
 
 	public function getGarantiasUsr($id)
 	    {
+
 	    	$garantias = Garantia::orderBy('id', 'ASC')->where('user_id', '=', $id )->get();
 				
 			$garantias = $this->completaDatosParaMostrarGarantias($garantias);
@@ -71,28 +71,32 @@ class GarantiasController extends Controller
 
     public function getIndex()
     {
+
     	if(Auth::guest()){
     		return view('welcome');
     	}
   		else{
-    		$garantias = Garantia::where('user_id', '=', Auth::user()->id )->paginate(10);
+			$garantias = Garantia::where('user_id', '=', Auth::user()->id )->paginate(10);
 				$garantias = $this->completaDatosParaMostrarGarantias($garantias);
     		return view('admin.users.piero')->with('garantias', $garantias);
 			}
     }
 
 		public function completaDatosParaMostrarGarantias($garantias){
+
 			foreach ($garantias as $key => $garantia) {
 				//LLAMO A LA API PARA DESCRIPCION DE ITEM
-			$client = new Client(['base_uri' => 'https://clientes.piero.com.ar','verify' => false]);
-			$response = $client->request('GET', '/modulos/webService', [
+			$client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/item','verify' => false]);
+			$response = $client->request('GET', '', [
 					'query' => [
 							'tag' => 'item',
 							'itcodigo' => $garantia->it_codigo,
 					]
 				]);
-			$jsond = json_decode($response->getBody());
+
+				$jsond = json_decode($response->getBody());
 			if($jsond->success){
+				
 				$garantia->desc = $jsond->descripcion;
 
 								$garantia->caducidad =  $this->calculoCaducidadGarantia($garantia);
@@ -117,7 +121,7 @@ class GarantiasController extends Controller
 		}
 
     public function calculoCaducidadGarantia($garantia){
-			$categoria = CategoriaGarantia::find($garantia->id_categoria);
+			$categoria = CategoriaGarantia::find($garantia->id_categoria)->first();
 			if($garantia->sustituye_orden == 0){ //dependiendo si es un colchon de recambio o no toma como fecha de recepcion la original o la del colchon ingresado
 				return date ( 'd/m/Y' , strtotime('+'.$categoria->lapso_meses.' month' , strtotime(date($garantia->fecha_recepcion))));
 			}else{
@@ -171,12 +175,27 @@ class GarantiasController extends Controller
     }
 
 		public function sustituido(){
-
-			$garantia = Garantia::where('orden' , '=', $_GET['ord'])->where('etiqueta' , '=', $_GET['etiq'])->first();
+			$orodenVieja = $this->checkOrden( $_GET['ord']);
+			$orden= $_GET['ord'];
+			$etiqueta = 0;
+			if($orodenVieja){
+				$arreglo = strtoupper($orden);
+				$arreglo = explode("E", $arreglo);
+				$orden = $arreglo[0];
+				$etiqueta = $arreglo[1];
+			}   
+			else{
+				
+				$orden  =  str_pad($orden, 20, "0", STR_PAD_LEFT);
+		
+			}
+	
+			$garantia = Garantia::where('orden' , '=', $orden)->where('etiqueta' , '=', $etiqueta)->first();
     		if(!$garantia){
     			$garantia = null;
     			return '<div class="alert alert-danger"><i class="fa fa-exclamation-triangle"></i> Los datos ingresados no corresponden con ninguno de los registrados. Intente nuevamente.</div>';
     		}else{
+
 					if($garantia->fecha_ejecucion != "0000-00-00"){
 					$fechaCompraFormat = \DateTime::createFromFormat('Y-m-d', $garantia->fecha_compra);
 					$fechaCompra = $fechaCompraFormat->format('d/m/Y');
@@ -293,17 +312,17 @@ class GarantiasController extends Controller
 		}
 	public function Consulta($id = null)
     {
-
+		
     	if(\Request::get('txt_garantias')){
     		$id = \Request::get('txt_garantias');
-    		$urlQr = "../qrcodes/";
+    		$urlQr = "qrcodes/";
     	}else{
     		$urlQr = "../../qrcodes/";
     	}
 
 
     	if($id != null){
-    	$garantia = Garantia::where('id_garantia' , '=', $id)->first();
+		$garantia = Garantia::where('id_garantia' , '=', $id)->first();
 		// var_dump($garantia);
 
     		if(!$garantia){
@@ -312,15 +331,14 @@ class GarantiasController extends Controller
     		}else{
     		/* Traigo relaciones */
     			$garantia->user;
-
     		/* Busco en API Descripcion */
-    		$client = new Client(['base_uri' => 'https://clientes.piero.com.ar','verify' => false]);
-			$response = $client->request('GET', '/modulos/webService', [ 'query' => ['tag' => 'item', 'itcodigo' => $garantia->it_codigo, 	]]);
+    		$client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/item','verify' => false]);
+			$response = $client->request('GET', '', [ 'query' => ['tag' => 'item', 'itcodigo' => $garantia->it_codigo, 	]]);
 			$jsond = json_decode($response->getBody());
 			if($jsond->success){
                 //LLAMO A LA API PARA VERIFICAR QUE CLIENTE SEA DE PIERO
-                $clientApi = new Client(['base_uri' => 'https://clientes.piero.com.ar','verify' => false]);
-                $responseCli = $clientApi->request('GET', '/modulos/webService', [
+                $clientApi = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/getInfoCliente','verify' => false]);
+                $responseCli = $clientApi->request('GET', '', [
                     'query' => [
                         'tag' => 'cliente',
                         'cuit' => $garantia->cuit_adquirido,
@@ -330,7 +348,6 @@ class GarantiasController extends Controller
 				// var_dump($jsonEsCliente);
                 $garantia->esClientePiero = $jsonEsCliente->success;
 				$garantia->descripcion = $jsond->descripcion;
-
                 $categoria = CategoriaGarantia::find($garantia->id_categoria);
 
 								if($garantia->sustituye_orden == 0){ //chequeo que el item consultado no sea un reemplazo que deba continuar una garantia anterior
@@ -351,69 +368,76 @@ class GarantiasController extends Controller
 			}else{
 				$garantia->descripcion = "No encontrado";
 			}
-
+			// dd( $urlQr.$garantia->orden.$garantia->etiqueta.".png");
 			$garantia->qr = $urlQr.$garantia->orden.$garantia->etiqueta.".png";
 		}
 		}else{
 			$garantia = null;
 		}
+		$user = Auth::user();
+		// dd($user);
 		return view('garantias.consulta')->with('garantia', $garantia);
     }
 
-
     public function postGarantias(Request $request)
     {
-    	$ordenProd = $request->input('ordenProd');
     	$etiqueta = $request->input('etiqueta');
-
     	// Create a client with a base URI
-		$client = new Client(['base_uri' => 'https://clientes.piero.com.ar','verify' => false]);
+		$client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/datosRegFabricacionCompletos','verify' => false]);
 
-		$response = $client->request('GET', '/modulos/webService', [
-		    'query' => [
-		        'tag' => 'regFabricacion',
-		        'orden' => $ordenProd,
-				'etiqueta' => $etiqueta
+		$response = $client->request('GET', '', [
+			'query' => [
+		     
+				'etiqueta' => $etiqueta,
+				'empresa' => 1
 		    ]
+	
 		]);
-
+		// $json = json_encode($response->getBody());
 		$json = $response->getBody();
 		$jsond = json_decode($json);
-			// dd($response);
-		if($jsond->success){
-			$result = Garantia::where('orden', '=', $ordenProd)->where('etiqueta', '=', $etiqueta)->first();
-			$jsond->regFabricacion->qr = "../qrcodes/".$ordenProd.$etiqueta.".png";
+		
+		if(isset($jsond->success)){
 
+				if($jsond->etiqueta=="") $jsond->etiqueta = "0";
+			$result = Garantia::where('orden', '=', $jsond->orden)->where('etiqueta', '=', $jsond->etiqueta)->first();
+			
+				$jsond->regFabricacion->qr = "qrcodes/".$jsond->orden.$jsond->etiqueta.".png";
+			// dd($jsond);
 			if ($result) {
 				$jsond->regFabricacion->estado = '<p class="sub"><label>Garant&iacute;a: </label> <span style="font-size: 14px;" class="label label-danger">Registrado</span></p>';
 			}else{
 				$jsond->regFabricacion->estado = '<p class="sub"><label>Garant&iacute;a: </label> <span style="font-size: 14px;" class="label label-success">Sin Registrar</span></p>';
 			}
 
-			QrCode::format('png')->size(150)->margin(1)->generate($ordenProd.$etiqueta, '../public/qrcodes/'.$ordenProd.$etiqueta.'.png');
+			QrCode::format('png')->size(150)->margin(1)->generate($jsond->orden.$jsond->etiqueta, '../public/qrcodes/'.$jsond->orden.$jsond->etiqueta.'.png');
 
-            $categoriaGarantia = CategoriaGarantia::find($jsond->regFabricacion->tipoGarantia->cat);
-            $jsond->regFabricacion->tipoGarantia->lapsoValidez = $categoriaGarantia->lapso_meses;
+			$categoriaGarantia = CategoriaGarantia::find($jsond->regFabricacion->tipoGarantia->cat);
+			if($categoriaGarantia!= null){
+
+				$jsond->regFabricacion->tipoGarantia->lapsoValidez = $categoriaGarantia->lapso_meses;
+			}
+		
+	
+			
+		return json_encode($jsond);
+			
 		}
 		return json_encode($jsond);
 
-    }
+	}
+	
 
     public function postAdquirido(Request $request)
     {
     	$cuit = $request->input('cuitEntidad');
 
 			//LLAMO A LA API PARA VERIFICAR QUE CLIENTE SEA DE PIERO
-			$client = new Client(['base_uri' => 'https://clientes.piero.com.ar','verify' => false]);
-			$response = $client->request('GET', '/modulos/webService', [
-		    	'query' => [
-		    	    'tag' => 'cliente',
-		    	    'cuit' => $cuit,
-		    	]
-				]);
+			$client = new Client(['base_uri' => 'http://api.grupopiero.com/api/getUserByCuit?cuit='.$cuit.'','verify' => false]);
+			$response = $client->request('GET', '');
 			$jsond = json_decode($response->getBody());
-
-			return json_encode($jsond);
+			if($jsond != null ) $jsond->success =1 ;
+ 			return json_encode($jsond);
 
     }
 
@@ -424,17 +448,32 @@ class GarantiasController extends Controller
     {
 		$garantia = new Garantia($request -> all());
 		$garantia->orden = $request->input('ordenProduccion');
-        $garantia->etiqueta = $request->input('etiq');
+		$garantia->etiqueta = $request->input('etiq') =="" ? 0 :$request->input('etiq') ;
         $garantia->it_codigo = $request->input('itemReg');
         $garantia->user_id = $request->input('userLogged');
         $garantia->cuit_adquirido = $request->input('cuitEntidad');
         $garantia->adquirido_a = $request->input('razonSoc');
         $garantia->factura = $request->input('numFactura');
         $garantia->id_categoria = $request->input('id_categoria');
+				if($request->input('ordenSustituto') != ''){
+					//aca va la logica  para ver el tipo de orden si es UA o etiqueta vieja.
 
-				if($request->input('ordenSustituto') != '' && $request->input('etiquetaSustituto') != ''){
-					$garantia->sustituye_orden = $request->input('ordenSustituto');
-        	$garantia->sustituye_etiq = $request->input('etiquetaSustituto');
+					$orden= $request->input('ordenSustituto'); 
+					$orodenVieja = $this->checkOrden($orden);
+					$etiqueta = 0;
+					if($orodenVieja){
+						$arreglo = strtoupper($orden);
+						$arreglo = explode("E", $arreglo);
+						$orden = $arreglo[0];
+						$etiqueta = $arreglo[1];
+					}   
+					else{
+						
+						$orden  =  str_pad($orden, 20, "0", STR_PAD_LEFT);
+				
+					}
+					$garantia->sustituye_orden = $orden;
+        			$garantia->sustituye_etiq = $etiqueta;
 					if($request->input('recepcionOriginal') != 0){
 						$garantia->fecha_recepcion_orig = date("Y-m-d", strtotime(str_replace('/', '-', $request->input('recepcionOriginal'))));
 					}else{
@@ -458,36 +497,50 @@ class GarantiasController extends Controller
         Flash::success('Su garantia ha sido registrada con exito. Recibirá un email en ' . Auth::user()->email . ' con un enlace al Registro GEP que podrá presentar en el local de compra ante una eventual falla de producto. 	&nbsp;<a target="_blank" href="pdf/' . $garantia->id_garantia . '" class="btn btn-primary"><i class="fa fa-download" aria-hidden="true"></i> Descargar Registro GEP</a>');
 				return redirect()->action('GarantiasController@getIndex');
 
+	}
+	public function checkOrden($codigo){
+        if(str_contains($codigo,'E') || str_contains($codigo,'e') ) return true;
+        else return false;
     }
 
-    public function postLoginapi(Request $request){
-
-        $id = $request->input('cliente');
-        $pass = $request->input('password');
+public function postLoginapi(Request $request){
 
 		
+        $id = $request->input('cliente');
+        $pass = $request->input('password');
+		
 
-            //LLAMO A LA API PARA DESCRIPCION DE ITEM
-            $client = new Client(['base_uri' => 'https://clientes.piero.com.ar','verify' => false]);
-            $response = $client->request('GET', '/modulos/webService', [
-                'query' => [
-                    'tag'       => 'login',
-                    'id'        => $id,
-                    'password'  => $pass,
-                ]
-                ]);
+		try{
 
+			//LLAMO A LA API PARA DESCRIPCION DE ITEM
+			$client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/loginPC','verify' => false]);
+			$response = $client->request('POST', '', [
+				'query' => [
+					'tag'       => 'login',
+					'id'        => $id,
+					'password'  => $pass,
+				]
+				]);
+	
 			$jsond = json_decode($response->getBody());
+		}
+		catch(\Exception $e){
+			dd($e);
+			dd("error");
+		}
         /* Si el login es para ejecutar una Garantia */
-			
-			if($jsond->error!=1){
+			if($jsond){
 				if($request->input('idGarantiaAEjecutar')){
 					$garantia = Garantia::where('id_garantia' , '=', $request->input('idGarantiaAEjecutar'))->first();
 					$garantia->cli_asignado = $id;
 					$garantia->ejecutada = 1;
 					$garantia->fecha_ejecucion = Carbon::now();
 					$garantia->save();
+					$garantia->success = true;
+					return $garantia;
 				}
+			}
+			else{
 			}
 			
 			// dd($request->all(),$jsond);

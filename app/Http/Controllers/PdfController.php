@@ -23,11 +23,33 @@ class PdfController extends Controller
     {
         $garantia = json_decode($this->getData($id));
         $hoy = date('Y-m-d');
-        $comprobante = $id;
-        $view =  \View::make('pdf.comprobante', compact('garantia', 'hoy', 'comprobante'))->render();
-        $pdf = \App::make('dompdf.wrapper');
-        $pdf->loadHTML($view);
-        return $pdf->setPaper('a6', 'landscape')->stream('comprobante');
+		$comprobante = $id;
+		// $garantia = 3;
+        // $hoy = 2;
+        // $comprobante = 1;
+        // $view =  \View::make('pdf.pruebapdf', compact('garantia', 'hoy', 'comprobante'))->render();
+        // $pdf = \App::make('dompdf.wrapper');
+		// $pdf->loadHTML($view);
+
+		$data = [
+			'garantia' => $garantia,
+			'hoy' => $hoy,
+			'comprobante' => $comprobante
+			  ];
+	
+			//   $data2 = [
+			// 	'garantia' => 125,
+			// 	'hoy' => 2132,
+			// 	  ];
+		
+		  $pdf = @PDF::loadView('pdf.comprobante',$data)->setPaper('a4', 'landscape');  
+		
+		//   $options = $pdf->getOptions();
+		//   $options->setIsHtml5ParserEnabled(true);
+		//   $pdf->setOptions($options);
+		//   $pdf->setOptions('setIsHtml5ParserEnabled',true);
+
+        return @$pdf->setPaper('a6', 'landscape')->stream('prueba');
     }
 
     public function DescargarComprobante($id) 
@@ -52,9 +74,15 @@ class PdfController extends Controller
     			$garantia->user;
 
     		/* Busco en API Descripcion */
-    		$client = new Client(['base_uri' => 'https://clientes.piero.com.ar','verify' => false]);
-			$response = $client->request('GET', '/modulos/webService', [ 'query' => ['tag' => 'item', 'itcodigo' => $garantia->it_codigo, 	]]);
-			$jsond = json_decode($response->getBody());
+    		$client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/item','verify' => false]);
+			$response = $client->request('GET', '', [
+					'query' => [
+							'tag' => 'item',
+							'itcodigo' => $garantia->it_codigo,
+					]
+				]);
+
+				$jsond = json_decode($response->getBody());
 			if($jsond->success){
 				$garantia->descripcion = $jsond->descripcion;
 				$garantia->caducidad =  date ( 'j/m/Y' , strtotime('+5 years' , strtotime(date($garantia->fecha_compra))));

@@ -36,9 +36,9 @@ Inicio \ Garantias
         	<a class="coefTooltip" data-toggle="tooltip" data-placement="auto" style="color:#2c3e50;cursor:pointer;vertical-align:middle;"  ><i style="color:#2c3e50;font-size:20px;vertical-align:middle;" class="fa fa-question-circle"></i> Donde está?</a>&nbsp;&nbsp;&nbsp;
           <label style="vertical-align:middle;margin-top:5px;"> Ingrese su registro de Fabricaci&oacute;n aquí:</label>
         	<div class="input-group">
-            	<input type="text" class="form-control" id="ordenProd" />
-            	<span style="padding:9px 15px;" class="input-group-addon">E</span>
-            	<input type="text" id="etiqueta" class="form-control" style="width:60px;" />
+            	{{-- <input type="text" class="form-control" id="ordenProd" />
+            	<span style="padding:9px 15px;" class="input-group-addon">E</span> --}}
+            	<input type="text" id="etiqueta" class="form-control" />
         	</div>
   		</div>
   		<button class="btn btn-primary" id="traerInfoOrden" >Continuar  <i class="fa fa-arrow-right" aria-hidden="true"></i></button>
@@ -437,9 +437,8 @@ $(".agregarNuevo").click( function(){
 */
 $("#traerInfoOrden").click( function(){
 
-if( $("#ordenProd").val() && $("#etiqueta").val() ){
+if( $("#etiqueta").val() ){
         var parametros = {
-                "ordenProd" : $("#ordenProd").val(),
                 "etiqueta" : $("#etiqueta").val(),
                 "userLogged" : ""
         };
@@ -449,29 +448,32 @@ if( $("#ordenProd").val() && $("#etiqueta").val() ){
                 url:   'garantias',
                 type:  'POST',
                 beforeSend: function () {
-                        $("#nuevoColchon").html("Procesando, espere por favor...");
+                        $("#nuevoColchon").html("Procesando, espere por espere...");
                 },
                 success:  function (response) {
-
-	                    var contenido;
+                      var contenido;
+                      
 	                    if(response.success){
-	                    	var itCodigo = response.regFabricacion.itCodigo;
+                        console.log(response);
+	                    	var itCodigo = response.itcodigo;
                         var estado = response.regFabricacion.estado;
+                        var e = "E";
+                        if(response.sap == 1) e ="";
 							contenido = '<form class="form-horizontal" method="post" id="registrarCompra" action="nueva"><div class="form-group"><div class="col-xs-3"><img class="img-responsive" src="'+ response.regFabricacion.qr + '" /></div><div style="padding-left:10px;" class="col-xs-9"><p class="titulo">' +
-                          response.regFabricacion.orden +'E' + parseInt(response.regFabricacion.etiqueta).toFixed() +
+                          response.orden +e + response.etiqueta +
                           '</p><p class="sub" style="margin-right: 180px;"><label>Descripcion: </label>'  +
-                          response.regFabricacion.descripcion + '</p><p class="sub"><label>Codigo item: </label>' +
-                          itCodigo + '</p>' + estado +
-                          '{{ Form::token() }}<input type="hidden" value="' + response.regFabricacion.orden +
+                          response.descripcion + '</p><p class="sub"><label>Codigo item: </label>' +
+                          itCodigo + '</p>' + estado +  
+                          '{{ Form::token() }}<input type="hidden" value="' + response.orden +
                            '" id="ordenProduccion" name="ordenProduccion" ><input type="hidden" value="' +
-                           response.regFabricacion.etiqueta + '" id="etiq" name="etiq" ><input type="hidden" value="' + itCodigo +
+                           response.etiqueta + '" id="etiq" name="etiq" ><input type="hidden" value="' + itCodigo +
                            '" id="itemReg" name="itemReg" ><input type="hidden" value="' +
                            response.regFabricacion.tipoGarantia.lapsoValidez + '" id="validezGarantia" name="validezGarantia" ><input type="hidden" value="{{ Auth::user()->id }}" id="userLogged" name="userLogged" ></div></div>';
                            Categoria = response.regFabricacion.tipoGarantia.cat;
                            if(response.regFabricacion.tipoGarantia.cat == "1"){
                             contenido += '<div><p class="alert alert-danger"><i class="fa fa-exclamation-circle" aria-hidden="true">' +
                                          '</i> Su producto no esta alcanzado por la garantía extendida Piero. Su producto cuenta exclusivamente con la garantia legal prevista en la ley 24240 (o la que en el futuro la reemplace), por el plazo de 6 meses desde la fecha de entrega del producto. Podra hacer uso de su garantía legal en el local donde adquirió el producto o en caso de ventas online contactar al vendedor del mismo.</p></div>';
-                           }else if( estado.indexOf( "Registrado" ) == -1 ){
+                           }else if( estado.indexOf( "Registrado" ) == -1  && response.regFabricacion.tipoGarantia.cat != false ){
                              /*
                            contenido += '<input type="hidden" value="' + response.regFabricacion.tipoGarantia.cat + '" id="id_categoria" name="id_categoria" >' +
                                         '<div class="form-group">' +
@@ -490,7 +492,7 @@ if( $("#ordenProd").val() && $("#etiqueta").val() ){
                                        '<label class="control-label col-xs-12 col-sm-3" ><i style="color:#2c3e50;font-size:18px;vertical-align:middle;" class="fa fa-question-circle" data-container="body" data-trigger="hover" data-placement="bottom" data-toggle="popover" title="Ayuda" data-content="Si el producto a registrar es el reemplazo de un producto defectuoso ingrese el registro de fabricación del producto reemplazado y presione -Reemplazo- de lo contrario presione -Nuevo- para registrar su producto. Recuerde que Piero puede verificar esta información y dejar sin efecto la garantia en caso de dar información no veraz. "></i> Nuevo o reemplazo?</label>' +
                                        '<div class="col-xs-12 col-sm-9">' +
                                        '<button style="width:100%;margin-bottom:7px;" class="btn btn-primary sustituto" type="button" id="esNuevo">Nuevo</button>'+
-                                       '<div class="input-group">	<input type="text" class="form-control sustituto" id="ordenSustituto" name="ordenSustituto" style="z-index: 0;" /> <span style="padding:9px 15px;" class="input-group-addon">E</span><input type="text" id="etiquetaSustituto" name="etiquetaSustituto" class="form-control sustituto" style="width:100px;z-index:0;" /><span class="input-group-btn"><button class="btn btn-primary sustituto" style="z-index:0;" type="button" id="esSustituto">Reemplazo</button></span></div>' +
+                                       '<div class="input-group">	<input type="text" class="form-control sustituto" id="ordenSustituto" name="ordenSustituto" style="z-index: 0;" /> <span class="input-group-btn"><button class="btn btn-primary sustituto" style="z-index:0;" type="button" id="esSustituto">Reemplazo</button></span></div>' +
                                        '</div>' +
                                        '</div>' +
                                        '<div class="form-group">'+
@@ -498,7 +500,14 @@ if( $("#ordenProd").val() && $("#etiqueta").val() ){
                                        '<div style="padding-left:10px;" id="adquiridoEntidad" class="col-xs-12"></div>'+
                                        '</div>'+
                                        '</form>';
-                           }else{
+                           }
+                           else if( response.regFabricacion.tipoGarantia.cat == false ){
+                            // alert("El colchon no pertenece a esta marca");
+                            contenido += '<div><p class="alert alert-danger"><i class="fa fa-exclamation-circle" aria-hidden="true">' +
+                                         '</i> El producto no pertenece a esta marca.</p></div>';
+
+                           }
+                           else{
                            contenido += '</form>';
                            }
 
@@ -511,6 +520,13 @@ if( $("#ordenProd").val() && $("#etiqueta").val() ){
               $('[data-toggle="popover"]').popover();
 
 
+                },
+                error: function(error){
+                  console.log(error);
+                  if(error.status == 500)
+                  $("#nuevoColchon").html("Error de servidor!");
+
+                  
                 }
         });
 }
@@ -541,19 +557,20 @@ $(document).on('click', '#verificarEntidad', function(){
                                             '<p class="titulo">PIERO</p>' +
                                             '<p class="sub"><label>Seleccione Sucursal: </label>' +
                                             '<select class="form-control" name="razonSoc">' +
-                                              '<option value="120032">Unicenter</option>' +
-                                              '<option value="120031">Escobar</option>' +
-                                              '<option value="120035">Sitio Web Oficial/Mercado libre</option>' +
-                                              '<option value="120036">OH My Bed!</option>' +
+                                              '<option value="5000000001">Unicenter</option>' +
+                                              '<option value="5000000003">Escobar</option>' +
+                                              '<option value="5000000000">Sitio Web Oficial/Mercado libre</option>' +
+                                              '<option value="5000000007">OH My Bed! City Bell</option>' +
+                                              '<option value="5000000005">OH My Bed! Martinez</option>' +
                                             '</select>' +
                                             '</p>' +
                                             '</div>';
                         }
                         else{
                           var emitenteDesc = '<div style="padding-left:10px;margin-bottom:10px;" class="verDatos col-xs-12">' +
-                                            '<p class="titulo">' + respuesta.cliente.nombre + '</p>' +
-                                            '<p class="sub"><label>Codigo: </label>' + respuesta.cliente.codEmitente + '</p>' +
-                                            '<input type="hidden" name="razonSoc" class="form-control" value="' + respuesta.cliente.codEmitente + '">' +
+                                            '<p class="titulo">' + respuesta.nombre + '</p>' +
+                                            '<p class="sub"><label>Codigo: </label>' + respuesta.id + '</p>' +
+                                            '<input type="hidden" name="razonSoc" class="form-control" value="' + respuesta.id + '">' +
                                             '</div>';
                         }
                     var contenido =  emitenteDesc +
@@ -630,10 +647,10 @@ $(document).on('click', '#esNuevo', function(){
 
 $(document).on('click', '#esSustituto', function(){
 
-    if( $("#ordenSustituto").val() && $("#etiquetaSustituto").val() ) {
+    if( $("#ordenSustituto").val()  ) {
         var parametros = {
-              "ord" : $("#ordenSustituto").val(),
-              "etiq" : $("#etiquetaSustituto").val()
+              "ord" : $("#ordenSustituto").val()
+              // "etiq" : $("#etiquetaSustituto").val()
         };
         $.ajax({
                 data:  parametros,

@@ -25,9 +25,9 @@ class GarantiaRequest extends Request
     public function rules()
     {
         return [
-            'ordenProduccion' => 'min:5|max:10|required',
-            'etiq' => 'required',
-            'itemReg' => 'min:12|max:12|required',
+            'ordenProduccion' => 'min:5|required',
+            // 'etiq' => 'required',
+            'itemReg' => 'min:12|required',
             'userLogged' => 'required',
             'cuitEntidad' => 'min:11|max:11|required',
             'razonSoc' => 'required',

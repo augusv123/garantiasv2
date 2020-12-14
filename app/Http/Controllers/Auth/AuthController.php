@@ -40,25 +40,32 @@ class AuthController extends Controller
     public function __construct(ActivationService $activationService)
     {
         $this->middleware($this->guestMiddleware(), ['except' => 'logout']);
+        
         $this->activationService = $activationService;
     }
 
     public function register(Request $request)
     {
+        $error = false;
+        if($request->email != $request->email2)
+        {   
+            $error=true;
+            Session::put('error_validacion_email','Los emails no coinciden.');
+            // dd($validator->getMessageBag());
+        }
         $validator = $this->validator($request->all());
-
-        if ($validator->fails()) {
+        if ($validator->fails() || $error==true) {
             $this->throwValidationException(
                 $request, $validator
             );
         }
 
         $user = $this->create($request->all());
-
+        
         $this->activationService->sendActivationMail($user);
 
         return redirect('/login')->with('status', 'Le hemos enviado un enlace de activación de cuenta. Verifique su e-mail.');
-    }
+ }
     /* FIN Overrided */
 
     /**

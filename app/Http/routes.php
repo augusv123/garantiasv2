@@ -67,11 +67,18 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function 
         'uses' => 'ExceptuadosController@destroy',
         'as'   => 'admin.exceptuados.destroy'
         ]);
+        Route::get('familias', [   //para que me permita ver garantias actuales
+            'uses' => 'FamiliasComercialesController@index',
+            'as'   => 'admin.familias.index'
+            ]);
 
     Route::get('dynamicModal/{id}',[
         'as'=>'dynamicModal',
         'uses'=> 'GarantiasController@getGarantiasUsr',
     ]);
+Route::post('fam-com-garantia', 'FamiliasComercialesController@famComGarantia');
+Route::post('delte-fam-com-garantia', 'FamiliasComercialesController@deleteFamComGarantia');
+
 
 });
 

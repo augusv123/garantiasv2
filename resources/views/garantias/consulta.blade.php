@@ -76,7 +76,12 @@ Garantias
 
 
         <div style="" class="col-xs-12 col-sm-9 col-md-9">
-           <p class="titulo">{{ $garantia->orden . "E" . $garantia->etiqueta }}<span class="spn" >Cod. Garantia: {{ $garantia->id_garantia }}</span></p>
+          @if($garantia->etiqueta == 0)
+          <p class="titulo">{{ $garantia->orden }}<span class="spn" >Cod. Garantia: {{ $garantia->id_garantia }}</span></p>
+
+          @else 
+          <p class="titulo">{{ $garantia->orden . "E" . $garantia->etiqueta }}<span class="spn" >Cod. Garantia: {{ $garantia->id_garantia }}</span></p>
+          @endif
            <p class="sub"><label>Descripcion: </label> {{ $garantia->descripcion }} </p>
           <div class="col-xs-12">
            <p class="sub col-xs-6"><label>Codigo item: </label> {{ $garantia->it_codigo }}</p>
@@ -221,7 +226,7 @@ Garantias
                           <div id="loginErrorMsg"></div>
                           <form id="loginForm" method="POST" >
                               <div class="form-group">
-                                  <label for="username" class="control-label">Numero de Cliente</label>
+                                  <label for="username" class="control-label">CUIT de usuario</label>
                                   <input type="text" class="form-control" id="username" name="username" value="" required="" title="Ingrese su numero de cliente Piero" placeholder="123456">
                                   <span class="help-block"></span>
                               </div>
@@ -287,23 +292,17 @@ Garantias
                           <a id="primerVisita" class="btn btn-warning btn-block" data-dismiss="modal" data-toggle="modal" data-target="#programarVisita">Programa visita</a>
                           @if($garantia->esClientePiero) 
                             @if(Auth::user()!= null && (Auth::user()->type=='local'||Auth::user()->type=='admin'))
-                            <a id="ProcederEjecucionDirecta" class="btn btn-primary btn-block disabled decisionEjecuta">Proceder a ejecución</a>
-                          <div id="ProcederEjecucionDirectamsj"></div>
+                              <a id="ProcederEjecucionDirecta" class="btn btn-primary btn-block disabled decisionEjecuta2">No puede proceder como admin</a>
+                            <div id="ProcederEjecucionDirectamsj"></div>
 
                             @else
                                 <a id="procedeEjecucion" class="btn btn-primary btn-block disabled decisionEjecuta" data-dismiss="modal" data-toggle="modal" data-target="
-                                @if($garantia->esClientePiero) 
-                                {{ '#login' }}
-                                {{-- @if(Auth::user()!= null && Auth::user()->type=='local') --}}
-                                @else {{ '#elevaDistribuidor' }} @endif">Procede a ejecución</a>
+                                @if($garantia->esClientePiero) {{ '#login' }}   {{-- @if(Auth::user()!= null && Auth::user()->type=='local') --}}@else {{ '#elevaDistribuidor' }} @endif">Procede a ejecución circuito normal</a>
                             @endif
                             
                           @else
-                          <a id="procedeEjecucion" class="btn btn-primary btn-block disabled decisionEjecuta" data-dismiss="modal" data-toggle="modal" data-target="
-                          @if($garantia->esClientePiero) 
-                          {{ '#login' }}
-                          {{-- @if(Auth::user()!= null && Auth::user()->type=='local') --}}
-                          @else {{ '#elevaDistribuidor' }} @endif">Procede a ejecución</a>
+                            <a id="procedeEjecucion" class="btn btn-primary btn-block disabled decisionEjecuta" data-dismiss="modal" data-toggle="modal" data-target="
+                            @if($garantia->esClientePiero) {{ '#login' }}  {{-- @if(Auth::user()!= null && Auth::user()->type=='local') --}} @else {{ '#elevaDistribuidor' }} @endif">Procede a ejecución</a>
                           @endif
                          
                           <a id="noProcedeEjecucion" class="btn btn-danger btn-block disabled decisionEjecuta" data-dismiss="modal" data-toggle="modal" data-target="#noProcede">No procede a ejecución</a>

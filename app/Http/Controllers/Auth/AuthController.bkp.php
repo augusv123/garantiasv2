@@ -9,6 +9,7 @@ use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
 use Flash;
 use Response;
+use Session;
 //Agrego siguientes para email verification on registry
 use Illuminate\Http\Request;
 use App\ActivationService;
@@ -44,18 +45,20 @@ class AuthController extends Controller
     }
 
     public function register(Request $request)
-    {
-      $validator = $this->validator($request->all());
-
-      if ($validator->fails()) {
-        return view('errors.register'); //workaround para error de registro, ya que la siguie
-        //return " <h3>error de validacion </h3>";
-        //return redirect('/register');
-
-          $this->throwValidationException(
-              $request, $validator
-          );
-      }
+    {   
+        $error = false;
+        // if($request->email != $request->email2)
+        // {   
+        //     $error=true;
+        //     Session::put('error_validacion_email','Los emails no coinciden.');
+        //     // dd($validator->getMessageBag());
+        // }
+        $validator = $this->validator($request->all());
+        if ($validator->fails() || $error==true) {
+            $this->throwValidationException(
+                $request, $validator
+            );
+        }
 
         $user = $this->create($request->all());
 
@@ -110,7 +113,7 @@ class AuthController extends Controller
     {
         return Validator::make($data, [
             'name' => 'required|max:255',
-            'email' => 'required|email|max:255|unique:users',
+            'email' => 'required|email|max:255|unique:users|confirmed',
             'dni' => 'required|min:7|max:8|unique:users',
             'password' => 'required|min:6|confirmed',
             'terms' => 'required|accepted'
