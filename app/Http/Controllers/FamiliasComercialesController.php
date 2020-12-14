@@ -43,7 +43,10 @@ class FamiliasComercialesController extends Controller
 
         
         // 
-        $familiascomerciales = array_merge($familiascomerciales, $familiascomercialesSAP);
+        if($familiascomerciales != null && $familiascomercialesSAP != null){
+
+            $familiascomerciales = array_merge($familiascomerciales, $familiascomercialesSAP);
+        }
         // descricao
         // fm-cod-com
         return view('admin.familias.index')->with('familiascomerciales', $familiascomerciales)->with('categoriasDeGarantias', $categoriasDeGarantias)->with('famComGarantias', $famComGarantias);
