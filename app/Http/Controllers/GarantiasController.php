@@ -433,7 +433,7 @@ class GarantiasController extends Controller
     	$cuit = $request->input('cuitEntidad');
 
 			//LLAMO A LA API PARA VERIFICAR QUE CLIENTE SEA DE PIERO
-			$client = new Client(['base_uri' => 'http://api.grupopiero.com/api/getUserByCuit?cuit='.$cuit.'','verify' => false]);
+			$client = new Client(['base_uri' => 'https://api.grupopiero.com/api/getUserByCuit?cuit='.$cuit.'','verify' => false]);
 			$response = $client->request('GET', '');
 			$jsond = json_decode($response->getBody());
 			if($jsond != null ) $jsond->success =1 ;
