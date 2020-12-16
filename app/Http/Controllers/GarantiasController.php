@@ -94,7 +94,7 @@ class GarantiasController extends Controller
 			// 	]);
 			$client = new Client();
 $credentials = base64_encode('augusto:augusto');
-$response = $client->get('http://back-garantias/api/item?itcodigo='.$garantia->it_codigo,
+$response = $client->get('http://localhost/api-garantias/public/api/item?itcodigo='.$garantia->it_codigo,
         [
             'headers' => [
                 'Authorization' => 'Basic ' . $credentials,
