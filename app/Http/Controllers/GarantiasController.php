@@ -48,7 +48,7 @@ class GarantiasController extends Controller
 
 		public function productosgep()
 	    {
-				$client = new Client(['base_uri' => 'https://clientes.piero.com.ar','verify' => false]);
+				$client = new Client(['base_uri' => 'https://clientes.piero.com.ar', [    'auth' => ['augusto', 'augusto'] ]]);
 				$response = $client->request('GET', '/modulos/webService', [
 			    	'query' => [
 			    	    'tag' => 'garantiasGEP',
@@ -71,7 +71,7 @@ class GarantiasController extends Controller
 
     public function getIndex()
     {
-
+		
     	if(Auth::guest()){
     		return view('welcome');
     	}
@@ -83,16 +83,23 @@ class GarantiasController extends Controller
     }
 
 		public function completaDatosParaMostrarGarantias($garantias){
-
 			foreach ($garantias as $key => $garantia) {
 				//LLAMO A LA API PARA DESCRIPCION DE ITEM
-			$client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/item','verify' => false]);
-			$response = $client->request('GET', '', [
-					'query' => [
-							'tag' => 'item',
-							'itcodigo' => $garantia->it_codigo,
-					]
-				]);
+			// $client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/item', [    'auth' => ['augusto', 'augusto'] ]]);
+			// $response = $client->request('GET', '', [
+			// 		'query' => [
+			// 				'tag' => 'item',
+			// 				'itcodigo' => $garantia->it_codigo,
+			// 		]
+			// 	]);
+			$client = new Client();
+$credentials = base64_encode('augusto:augusto');
+$response = $client->get('http://back-garantias/api/item?itcodigo='.$garantia->it_codigo,
+        [
+            'headers' => [
+                'Authorization' => 'Basic ' . $credentials,
+            ],
+        ]);
 
 				$jsond = json_decode($response->getBody());
 			if($jsond->success){
@@ -332,12 +339,12 @@ class GarantiasController extends Controller
     		/* Traigo relaciones */
     			$garantia->user;
     		/* Busco en API Descripcion */
-    		$client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/item','verify' => false]);
+    		$client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/item', [    'auth' => ['augusto', 'augusto'] ]]);
 			$response = $client->request('GET', '', [ 'query' => ['tag' => 'item', 'itcodigo' => $garantia->it_codigo, 	]]);
 			$jsond = json_decode($response->getBody());
 			if($jsond->success){
                 //LLAMO A LA API PARA VERIFICAR QUE CLIENTE SEA DE PIERO
-                $clientApi = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/getInfoCliente','verify' => false]);
+                $clientApi = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/getInfoCliente', [    'auth' => ['augusto', 'augusto'] ]]);
                 $responseCli = $clientApi->request('GET', '', [
                     'query' => [
                         'tag' => 'cliente',
@@ -383,7 +390,7 @@ class GarantiasController extends Controller
     {
     	$etiqueta = $request->input('etiqueta');
     	// Create a client with a base URI
-		$client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/datosRegFabricacionCompletos','verify' => false]);
+		$client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/datosRegFabricacionCompletos', [    'auth' => ['augusto', 'augusto'] ]]);
 
 		$response = $client->request('GET', '', [
 			'query' => [
@@ -513,7 +520,7 @@ public function postLoginapi(Request $request){
 		try{
 
 			//LLAMO A LA API PARA DESCRIPCION DE ITEM
-			$client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/loginPC','verify' => false]);
+			$client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/loginPC', [    'auth' => ['augusto', 'augusto'] ]]);
 			$response = $client->request('POST', '', [
 				'query' => [
 					'tag'       => 'login',

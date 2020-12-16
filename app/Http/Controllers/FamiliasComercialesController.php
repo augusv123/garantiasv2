@@ -13,7 +13,7 @@ class FamiliasComercialesController extends Controller
 
 
 
-        $client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/']);
+        $client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/'],[  'auth' => ['S0021553227', 'Piero28102002@2020!!']]);
         // Send a request to https://foo.com/api/test
         $familiascomerciales = $client->request('GET', 'getFamiliasComerciales');
         $familiascomerciales = $familiascomerciales->getBody()->getContents();
@@ -58,7 +58,7 @@ public function famComGarantia(Request $request){
 	$categoria = $request->input('categoria');
 	$empresa = 1;
 	
-	$client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/','verify' => false]);
+	$client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/', [ 'auth' => ['S0021553227', 'Piero28102002@2020!!']]]);
 	$response = $client->request('GET', 'addFamComGarantia', [
 		'query' => [
 			'familiaComercial' => $familiaComercial,
@@ -76,7 +76,7 @@ public function deleteFamComGarantia(Request $request){
     $valoraborrar = $request->input('valoraborrar');
 	$empresa = 1;
 	
-	$client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/','verify' => false]);
+	$client = new Client(['base_uri' => 'http://localhost/api-garantias/public/api/',[  'auth' => ['S0021553227', 'Piero28102002@2020!!']]]);
 	$response = $client->request('GET', 'deleteFamComGarantia', [
 		'query' => [
 			'valoraborrar' => $valoraborrar,
