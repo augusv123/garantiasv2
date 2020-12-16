@@ -30,6 +30,7 @@ Garantias
     @include('flash::message')
     <div role="tabpanel" class="tab-pane <?php if(!isset($_GET['joined'])){ echo "active"; } ?>" id="info">
         <form class="form-horizontal" role="form" method="POST" action="{{ url('/login') }}">
+          <input type="hidden" name="_token" value="{{ csrf_token() }}">
                         {!! csrf_field() !!}
 
                         <div class="form-group{{ $errors->has('email') ? ' has-error' : '' }}">
